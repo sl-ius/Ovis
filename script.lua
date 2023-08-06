@@ -602,6 +602,8 @@ end
 
 --[[
 
+Not in use
+
 function OpenHome()
     if OVIS_LOADED == true then
         if not Debounce then
