@@ -3,6 +3,8 @@
     Ovis is a free & open-source univeral script.
     Sius - Programming + Designing
 
+    Trust me, I don't code this bad anymore ;-;
+
     discord: discord.gg/d3fKHPTafg
 
 --]]
@@ -10,19 +12,20 @@ local currentversion = "Alpha 1.0"
 local OVIS_LOADED = false
 
 local OvisUI = {
-    HomeOpen = false,
+    HomeOpen = true,
     Closed = true,
     Hidden = false,
     Hovering = false,
     Debounce = false,
+    HomeDebounce = false,
     ButtonDebounce = false
 }
 
 local OvisSettings = {
-    StartupSoundVolume = 10,
+    StartupSoundVolume = 5,
     StartupSound = "rbxassetid://"..1862048961,
-    NotifcationSoundVolume = 5,
-    NotifcationSound = "rbxassetid://"..7383525713,
+    NotifcationSoundVolume = 1,
+    NotifcationSound = "rbxassetid://"..8183296024,
     HoverSoundVolume = 0.8,
     HoverSound = "rbxassetid://"..10066931761,
     ClickSoundVolume = 0.8,
@@ -62,6 +65,13 @@ local Exit = Ovis.Exit
 local NotInTabScreen = Ovis.NotInTabScreen
 
 Notification.Template.Visible = false
+
+local frames = 0
+
+wait(0.1)
+RunService.RenderStepped:Connect(function()
+    frames = frames + 1
+end)
 
 local Blur = (function()
     local module = {}
@@ -275,6 +285,64 @@ local Blur = (function()
 
 end)()
 
+function DestroyCurrentOvis()
+    local RemoveInstances = 0
+    if game.Lighting:FindFirstChild("OvisBlur") then
+		game.Lighting:FindFirstChild("OvisBlur"):Destroy()
+    end
+
+    for _, ovis in ipairs(game.CoreGui:GetChildren()) do
+        if ovis.Name == "Ovis" and ovis ~= Ovis then
+            ovis:Destroy()
+            ovis.Enabled = false
+            ovis.Name = "Destroying Ovis..."
+            RemoveInstances = RemoveInstances + 1
+        end
+    end
+
+    if gethui() then
+        for _, ovis in ipairs(gethui():GetChildren()) do
+            if ovis.Name == "Ovis" and ovis ~= Ovis then
+                ovis.Enabled = false
+                ovis.Name = "Destroying Ovis..."
+                ovis:Destroy()
+                RemoveInstances = RemoveInstances + 1
+            end
+        end
+    end
+end
+
+do
+    task.spawn(function()
+        while wait() do
+            local t = tick()
+            local minutes = math.floor((t / 60) % 60)
+            local hours = math.floor((t / 3600) % 24)
+
+            if string.len(minutes) < 2 then
+                minutes = "0" .. tostring(minutes)
+            end
+
+            if string.len(hours) < 2 then
+                hours = "0" .. tostring(hours)
+            end
+
+            Sidebar.Time.Text = hours .. minutes
+        end
+    end)
+end
+
+function EditErrorGui(Title, Content, Button)
+    local finderrorgui = game.CoreGui:FindFirstChild("RobloxPromptGui")
+    if finderrorgui then
+        game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt.TitleFrame.ErrorTitle.Text = Title
+        game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt.MessageArea.ErrorFrame.ErrorMessage.Text = Content
+        game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt.MessageArea.ErrorFrame.ButtonArea.LeaveButton.ButtonText.Text = Button
+    else
+        warn("Failed to fetch item 'RobloxPromptGui'")
+    end
+end
+
 function OvisUI:Notify(NotificationSettings)
     spawn(function()
         local CreateTemplate = Notification.Template:Clone()
@@ -343,6 +411,21 @@ function OvisUI:Notify(NotificationSettings)
 end
 
 function BootOvis()
+
+    DestroyCurrentOvis()
+
+    local Blur = Instance.new("BlurEffect")
+    Blur.Name = "OvisBlur"
+    Blur.Parent = game.Lighting
+    Blur.Size = 0
+    
+    if Ovis.Enabled == false then
+        warn("Ovis enable failed")
+        wait(0.4)
+        Ovis:Destroy()
+        return
+    end
+
     Sidebar.BackgroundTransparency = 1
     Sidebar.Size = UDim2.new(0, 40, 0, 330)
     Sidebar.Position = UDim2.new(0, -50, 0.5, 0)
@@ -373,40 +456,10 @@ function BootOvis()
     Sidebar.Time.TextTransparency = 1
     Sidebar.ClipsDescendants = true
 
-    Home.BackgroundTransparency = 1
-    Home.Introduce.Position = UDim2.new(1, 0, 0, 26)
-    Home.Discord.Position = UDim2.new(1, 0, 0, 26)
-    Home.Execute.Position = UDim2.new(1, 0, 0, 338)
-    Home.Game.Position = UDim2.new(1, 0, 0, 102)
-    Home.User.Position = UDim2.new(1, 0, 0, 256)
-    Home.Introduce.BackgroundTransparency = 1
-    Home.Discord.BackgroundTransparency = 1
-    Home.Execute.BackgroundTransparency = 1
-    Home.Game.BackgroundTransparency = 1
-    Home.User.BackgroundTransparency = 1
-    Home.Introduce.Logo.ImageTransparency = 1
-    Home.Introduce.Subtitle.TextTransparency = 1
-    Home.Introduce.Title.TextTransparency = 1
-    Home.Discord.Title.TextTransparency = 1
-    Home.Discord.Description.TextTransparency = 1
-    Home.Discord.Join.ImageTransparency = 1
-    Home.Game.Thumbnail.ImageTransparency = 1
-    Home.Game.GameTitle.TextTransparency = 1
-    Home.Game.Player.TextTransparency = 1
-    Home.Game.FPS.TextTransparency = 1
-    Home.Game.Latency.TextTransparency = 1
-    Home.User.Profile.ImageTransparency = 1
-    Home.User.Profile.BackgroundTransparency = 1
-    Home.User.Displayname.TextTransparency = 1
-    Home.User.Username.TextTransparency = 1
-    Home.Execute.Executor.TextTransparency = 1
-    Home.Execute.Description.TextTransparency = 1
-    Home.Visible = true
-
 
     if game:IsLoaded() or OVIS_LOADED == true then
         local GetSidebarSound = Instance.new("Sound")
-        GetSidebarSound.Parent = SoundService
+        GetSidebarSound.Parent = Ovis
         GetSidebarSound.SoundId = OvisSettings.StartupSound
         GetSidebarSound.Volume = OvisSettings.StartupSoundVolume
         GetSidebarSound.PlayOnRemove = true
@@ -482,19 +535,18 @@ function BootOvis()
                     TweenService:Create(buttons.Icon, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 20, 0, 20)}):Play()
                     TweenService:Create(buttons.Icon, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {ImageTransparency = 0.5}):Play()
                     TweenService:Create(buttons.UIStroke, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {Transparency = 1}):Play()
-                    wait(0.2)
+                    wait(0.1)
                     TweenService:Create(buttons, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 33, 0, 33)}):Play()
                     TweenService:Create(buttons, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
                     TweenService:Create(buttons.Icon, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 21, 0, 21)}):Play()
                     TweenService:Create(buttons.Icon, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
                     TweenService:Create(buttons.UIStroke, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
-                    wait(4)
                 else
                     TweenService:Create(buttons, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 29, 0, 29)}):Play()
                     TweenService:Create(buttons, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.6}):Play()
                     TweenService:Create(buttons.Icon, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 20, 0, 20)}):Play()
                     TweenService:Create(buttons.Icon, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {ImageTransparency = 0.5}):Play()
-                    wait(0.2)
+                    wait(0.1)
                     TweenService:Create(buttons, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 32, 0, 32)}):Play()
                     TweenService:Create(buttons.Icon, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
                     TweenService:Create(buttons.Icon, TweenInfo.new(0.23, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 21, 0, 21)}):Play()
@@ -503,7 +555,231 @@ function BootOvis()
                 ButtonDebounce = false
             end)
         end
+
     end
+end
+
+function OpenHome()
+    if not HomeDebounce then
+        HomeOpen = true
+        HomeDebounce = true
+    end
+
+    Home.BackgroundTransparency = 1
+    Home.Visible = true
+    -- Intrduce
+    Home.Introduce.Position = UDim2.new(1, 0, 0, 26)
+    Home.Introduce.BackgroundTransparency = 1
+    Home.Introduce.Logo.ImageTransparency = 1
+    Home.Introduce.Subtitle.TextTransparency = 1
+    Home.Introduce.Title.TextTransparency = 1
+    -- Introduce Settings
+    Home.Introduce.Subtitle.Text = "Howdy, "..game.Players.LocalPlayer.DisplayName
+    -- Discord
+    Home.Discord.Title.TextTransparency = 1
+    Home.Discord.BackgroundTransparency = 1
+    Home.Discord.Description.TextTransparency = 1
+    Home.Discord.Join.ImageTransparency = 1
+    Home.Discord.Position = UDim2.new(1, 0, 0, 26)
+    -- Discord Settings
+    Home.Discord.Join.MouseButton1Click:Connect(function()
+        local InviteLink = "https://discord.gg/RYbTrcvcHQ"
+        local Split = string.split(InviteLink, ".gg/")
+        local InviteCode = Split[2]
+
+        local http_request = http_request or request or (syn and syn.request) or (http and http.request)
+        http_request({
+            Url = "http://127.0.0.1:6463/rpc?v=1",
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["Origin"] = "https://discord.com"
+            },
+            Body = game:GetService("HttpService"):JSONEncode({
+                cmd = "INVITE_BROWSER",
+                args = {
+                    code = InviteCode
+                },
+                nonce = game:GetService("HttpService"):GenerateGUID(false)
+            }),
+        })
+        OvisUI:Notify({Title = "Joining Discord...", Content = "Open up your Discord and click the join button, welcome to Ovis.", Duration = 6})
+    end)
+    Home.Discord.Join.MouseEnter:Connect(function()
+        TweenService:Create(Home.Discord.Join, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {ImageTransparency = 0.3}):Play()
+        TweenService:Create(Home.Discord.Join, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 269, 0, 119)}):Play()
+    end)
+    Home.Discord.Join.MouseLeave:Connect(function()
+        TweenService:Create(Home.Discord.Join, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
+        TweenService:Create(Home.Discord.Join, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 282, 0, 126)}):Play()
+    end)
+    -- Gane
+    Home.Game.Position = UDim2.new(1, 0, 0, 102)
+    Home.Game.BackgroundTransparency = 1
+    Home.Game.Thumbnail.ImageTransparency = 1
+    Home.Game.GameTitle.TextTransparency = 1
+    Home.Game.Player.TextTransparency = 1
+    Home.Game.FPS.TextTransparency = 1
+    Home.Game.Latency.TextTransparency = 1
+    -- Game Settings
+    Home.Game.GameTitle.Text = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+    Home.Game.Thumbnail.Image = "https://assetgame.roblox.com/Game/Tools/ThumbnailAsset.ashx?aid=".. game.PlaceId .."&fmt=png&wd=420&ht=420"
+    -- User
+    Home.User.Position = UDim2.new(1, 0, 0, 256)
+    Home.User.Profile.ImageTransparency = 1
+    Home.User.Profile.BackgroundTransparency = 1
+    Home.User.Displayname.TextTransparency = 1
+    Home.User.Username.TextTransparency = 1
+    Home.User.BackgroundTransparency = 1
+    -- User Settings
+    Home.User.Displayname.Text = game.Players.LocalPlayer.DisplayName
+    Home.User.Username.Text = game.Players.LocalPlayer.Name
+    Home.User.Profile.Image = Players:GetUserThumbnailAsync(Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+    -- Execute
+    Home.Execute.Position = UDim2.new(1, 0, 0, 338)
+    Home.Execute.BackgroundTransparency = 1
+    Home.Execute.Executor.TextTransparency = 1
+    Home.Execute.Description.TextTransparency = 1
+    -- Execute Settings
+    Home.Execute.Executor.Text = identifyexecutor()
+    if Home.Execute.Executor.Text == "Synapse X" or Home.Execute.Executor.Text == "ScriptWare" or Home.Execute.Executor.Text == "Krnl" then
+        Home.Execute.Description.Text = identifyexecutor().." is verified as our supported executor"
+    else
+        Home.Execute.Description.Text = "Ovis does not verified "..identifyexecutor().." as our supported executor."
+    end
+
+    TweenService:Create(Home, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.5}):Play()
+    TweenService:Create(game.Lighting:FindFirstChildOfClass("BlurEffect"), TweenInfo.new(1.4, Enum.EasingStyle.Quint), {Size = 24}):Play()
+
+    wait(0.3)
+    TweenService:Create(Home.Discord, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(Home.Discord, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, -685, 0, 26)}):Play()
+
+    wait(0.22)
+    TweenService:Create(Home.Introduce, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(Home.Introduce, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, -350, 0, 26)}):Play()
+
+    wait(0.2)
+    TweenService:Create(Home.Game, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(Home.Game, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, -350, 0, 103)}):Play()
+
+    wait(0.15)
+    TweenService:Create(Home.User, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(Home.User, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, -350, 0, 257)}):Play()
+
+    wait(0.1)
+    TweenService:Create(Home.Execute, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(Home.Execute, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, -350, 0, 339)}):Play()
+
+    TweenService:Create(Home.Introduce.Logo, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Introduce.Subtitle, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Introduce.Title, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {TextTransparency = 0.2}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Discord.Title, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Discord.Description, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0.5}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Discord.Join, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.Thumbnail, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.GameTitle, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.FPS, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.Latency, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.Player, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.User.Profile, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.9}):Play()
+    TweenService:Create(Home.User.Profile, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.User.Displayname, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.User.Username, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Execute.Executor, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Execute.Description, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
+
+    wait(1)
+
+    HomeDebounce = false
+
+end
+
+function CloseHome()
+    if not HomeDebounce then
+        HomeOpen = false
+        HomeDebounce = true
+    end
+
+    TweenService:Create(Home.Introduce.Logo, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Introduce.Subtitle, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Introduce.Title, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Discord.Title, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Discord.Description, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Discord.Join, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.Thumbnail, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.GameTitle, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.FPS, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.Latency, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Game.Player, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.User.Profile, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(Home.User.Profile, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.User.Displayname, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.User.Username, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Execute.Executor, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+    wait(0.05)
+    TweenService:Create(Home.Execute.Description, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+
+    wait(0.22)
+    TweenService:Create(Home.Execute, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(Home.Execute, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, 0, 0, 338)}):Play()
+    wait(0.2)
+
+    TweenService:Create(Home.User, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(Home.User, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, 0, 0, 257)}):Play()
+
+    wait(0.15)
+
+    TweenService:Create(Home.Game, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(Home.Game, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, 0, 0, 103)}):Play()
+
+    wait(0.1)
+    TweenService:Create(Home.Introduce, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(Home.Introduce, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, 0, 0, 26)}):Play()
+
+    wait(0.05)
+    TweenService:Create(Home.Discord, TweenInfo.new(0.57, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(Home.Discord, TweenInfo.new(0.57, Enum.EasingStyle.Back), {Position = UDim2.new(1, 0, 0, 26)}):Play()
+
+    TweenService:Create(Home, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(game.Lighting:FindFirstChildOfClass("BlurEffect"), TweenInfo.new(1.4, Enum.EasingStyle.Quint), {Size = 0}):Play()
+
+    wait(0.3)
+
+    Home.Visible = false
+
+    wait(1)
+    HomeDebounce = false
+
 end
 
 function HideSidebar()
@@ -600,136 +876,16 @@ function UnhideSidebar()
     Debounce = false
 end
 
---[[
-
-Not in use
-
-function OpenHome()
-    if OVIS_LOADED == true then
-        if not Debounce then
-            HomeOpen = true
-            Debounce = true
-            TweenService:Create(Home, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.5}):Play()
-            wait(0.6)
-            TweenService:Create(Home.Introduce, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
-            TweenService:Create(Home.Introduce, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {Position = UDim2.new(1, -350 ,0, 26)}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Introduce.Logo, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Introduce.Subtitle, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Introduce.Title, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
-            TweenService:Create(Home.Discord, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
-            TweenService:Create(Home.Discord, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {Position = UDim2.new(1, -685, 0, 26)}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Discord.Title, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Discord.Description, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Discord.Join, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
-            TweenService:Create(Home.Game, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
-            TweenService:Create(Home.Game, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {Position = UDim2.new(1, -350, 0, 102)}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Game.Thumbnail, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Game.GameTitle, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Game.FPS, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Game.Latency, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Game.Player, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
-            TweenService:Create(Home.User, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
-            TweenService:Create(Home.User, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {Position = UDim2.new(1, -350, 0, 256)}):Play()
-            wait(0.08)
-            TweenService:Create(Home.User.Profile, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.9}):Play()
-            wait(0.08)
-            TweenService:Create(Home.User.Profile, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
-            wait(0.08)
-            TweenService:Create(Home.User.Displayname, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
-            wait(0.03)
-            TweenService:Create(Home.User.Username, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
-            TweenService:Create(Home.Execute, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
-            TweenService:Create(Home.Execute, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {Position = UDim2.new(1, -350, 0, 338)}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Execute.Executor, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
-            wait(0.08)
-            TweenService:Create(Home.Execute.Description, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
-            Debounce = false
-
-
-            OvisUI:Notify({
-                Title = "Welcome Home, " .. game.Players.LocalPlayer.DisplayName,
-                Content = "Enjoy your stay here!",
-                Duration = 3
-            })
-        end
-    end
-end
-
-function CloseHome()
-    if OVIS_LOADED == true then
-        if not Debounce then
-            HomeOpen = false
-            Debounce = true
-            TweenService:Create(Home.Introduce.Logo, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Introduce.Subtitle, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Introduce.Title, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Game.Thumbnail, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Game.GameTitle, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Game.FPS, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Game.Latency, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Game.Player, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.User.Profile, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.User.Profile, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.User.Displayname, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.User.Username, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Execute.Executor, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Execute.Description, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Discord.Title, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Discord.Description, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
-            wait(0.03)
-            TweenService:Create(Home.Discord.Join, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
-            Debounce = false
-        end
-    end
-end
-
-Sidebar.Menu.Interact.MouseButton1Click:Connect(function()
-    if HomeOpen then
-
-        HomeOpen = true
-        OpenHome()
-    else
-        HomeOpen = false
-        CloseHome()
-    end
-end)
-
---]]
-
 BootOvis()
 
-OvisUI:Notify({
-    Title = "WARNING: WIP",
-    Content = "NOTICE! THOSE UI IS CURRENTLY WIP IT WILL NOT BE THE FINAL PRODUCT!",
-    Duration = 4
-})
+Sidebar.Buttons.Home.Interact.MouseButton1Click:Connect(function()
+    if HomeDebounce then return end
+    if HomeOpen then
+        CloseHome()
+    else
+        OpenHome()
+    end
+end)
 
 -- Core of Buttons
 
@@ -737,12 +893,8 @@ Sidebar.Toggle.MouseButton1Click:Connect(function()
     if game:IsLoaded() or OVIS_LOADED == true then
         Hidden = true
         HideSidebar()
-
-        wait(0.5)
     end
 end)
-
--- Core of Hotkeys
 
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.T then
@@ -757,6 +909,20 @@ UserInputService.InputBegan:Connect(function(input)
     end
 end)
 
+game.Players.PlayerAdded:Connect(function(Player)
+    if Player.Name == "Sl_ius" then
+        OvisUI:Notify({Title = "Sius joined", Content = "Ovis creator, Sius (@Sl_ius) has joined your experience", Duration = 3})
+    end
 
-wait(20)
-Ovis:Destroy()
+    if Player:IsFriendsWith(Players.LocalPlayer.UserId) then
+        OvisUI:Notify({Title = "Friend Joined", Content = "Your friend, " .. Player.Name .. " has joined your experience", Duration = 3})
+    end
+end)
+
+while true do
+    wait(1)
+    Home.Game.FPS.Text = "You are running at "..frames.." fps"
+    frames = 0
+    Home.Game.Latency.Text = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue().." Latency"
+    Home.Game.Player.Text = tostring(#game.Players:GetChildren()).."/"..tostring(game.Players.MaxPlayers).." Players"
+end
