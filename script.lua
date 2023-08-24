@@ -642,10 +642,10 @@ function OpenHome()
     Home.Execute.Description.TextTransparency = 1
     -- Execute Settings
     Home.Execute.Executor.Text = identifyexecutor()
-    if Home.Execute.Executor.Text == "Synapse X" or Home.Execute.Executor.Text == "ScriptWare" or Home.Execute.Executor.Text == "Krnl" then
-        Home.Execute.Description.Text = identifyexecutor().." is verified as our supported executor"
+    if identifyexecutor() == "Synapse X" or identifyexecutor() == "ScriptWare" or identifyexecutor() == "Krnl" then
+        Home.Execute.Description.Text = identifyexecutor().." is in our verified supported executors."
     else
-        Home.Execute.Description.Text = "Ovis does not verified "..identifyexecutor().." as our supported executor."
+        Home.Execute.Description.Text = identifyexecutor().." is not in our verified supported executors."
     end
 
     TweenService:Create(Home, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.5}):Play()
@@ -842,7 +842,16 @@ function HideSidebar()
 
     Debounce = false
 end
-
+function getOwner()
+    local marketplaceService = game:GetService("MarketplaceService")
+    local product = marketplaceService:GetProductInfo(game.PlaceId, Enum.InfoType.Asset)
+    return {
+        ["Name"] = product.Name;
+        ["ID"] = product.CreatorTargetId;
+        ["Type"] = product.CreatorType;
+        ["IsVerified"] = product.HasVerifiedBadge;
+    }
+end    
 function UnhideSidebar()
     Debounce = true
     TweenService:Create(Sidebar, TweenInfo.new(1.2, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
@@ -917,12 +926,18 @@ game.Players.PlayerAdded:Connect(function(Player)
     if Player:IsFriendsWith(Players.LocalPlayer.UserId) then
         OvisUI:Notify({Title = "Friend Joined", Content = "Your friend, " .. Player.Name .. " has joined your experience", Duration = 3})
     end
+    if Player.UserId == 1 then
+        OvisUI:Notify({Title = "ROBLOX Joined", Content = "ROBLOX has joined your experience! Get the camera!!!!!!", Duration = 5})
+    end
+    if Player.UserId == getOwner().ID then
+        OvisUI:Notify({Title = "Game onwer Joined", Content = "The game owner has joined your experience! Get the camera!!!!!!", Duration = 5}) 
+    end
 end)
 
 while true do
     wait(1)
     Home.Game.FPS.Text = "You are running at "..frames.." fps"
     frames = 0
-    Home.Game.Latency.Text = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue().." Latency"
-    Home.Game.Player.Text = tostring(#game.Players:GetChildren()).."/"..tostring(game.Players.MaxPlayers).." Players"
+    Home.Game.Latency.Text = "Latency: "..game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+    Home.Game.Player.Text = "Player count: "..tostring(#game.Players:GetChildren()).."/"..tostring(game.Players.MaxPlayers)
 end
