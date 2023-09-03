@@ -10,6 +10,8 @@
     discord: discord.gg/d3fKHPTafg
     discord username: sl_ius / ps3ud0_c0d3
 
+    Sius is currently working on a better one, please check out our Discord
+
 --]]
 local currentversion = "Alpha 1.0"
 local OVIS_LOADED = false
