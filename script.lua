@@ -5,7 +5,10 @@
 
     Trust me, I don't code this bad anymore ;-;
 
+    new version stuff by herman_484
+
     discord: discord.gg/d3fKHPTafg
+    discord username: sl_ius / ps3ud0_c0d3
 
     Sius is currently working on a better one, please check out our Discord
 
@@ -34,23 +37,38 @@ local OvisSettings = {
     ClickSound = "rbxassetid://"..6972137633,
     UnhideKeybind = T
 }
-
+function getService()
+    local t = {}
+    return setmetatable(t, {
+    __index = function(t,i)
+              local s,e = pcall(function()
+               return game:GetService(i)
+              end)
+            if true then
+            return game:GetService(i)
+            else
+            return nil
+            end
+          return getmetatable(t)
+    end
+    })
+    end
 --> Getting Service <--
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
+local RunService = getService().RunService
+local TweenService = getService().TweenService
+local Players = getService().Players
+local CoreGui = getService().CoreGui
 local Camera = game.workspace.CurrentCamera
-local UserInputService = game:GetService("UserInputService")
-local VirtualUser = game:GetService("VirtualUser")
-local TextService = game:GetService("TextService")
-local HttpService = game:GetService("HttpService")
+local UserInputService = getService().UserInputService
+local VirtualUser = getService().VirtualUser
+local TextService = getService().TextService
+local HttpService = getService().HttpService
 
 local Ovis = game:GetObjects("rbxassetid://14337620278")[1] -- Ovis interface
 Ovis.Enabled = true
 OVIS_LOADED = true
 
--- protecting Ovis
+-- protecting Ovis from streaming softwares
 if gethui then -- get_hidden_gui
     Ovis.Parent = gethui()
 elseif syn.protectgui then
@@ -335,11 +353,12 @@ do
 end
 
 function EditErrorGui(Title, Content, Button)
-    local finderrorgui = game.CoreGui:FindFirstChild("RobloxPromptGui")
-    if finderrorgui then
-        game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt.TitleFrame.ErrorTitle.Text = Title
-        game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt.MessageArea.ErrorFrame.ErrorMessage.Text = Content
-        game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt.MessageArea.ErrorFrame.ButtonArea.LeaveButton.ButtonText.Text = Button
+    local promptgui = game.CoreGui:FindFirstChild("RobloxPromptGui")
+    if promptgui then
+        local gui = game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt
+       gui.TitleFrame.ErrorTitle.Text = Title
+       gui.MessageArea.ErrorFrame.ErrorMessage.Text = Content
+       gui.MessageArea.ErrorFrame.ButtonArea.LeaveButton.ButtonText.Text = Button
     else
         warn("Failed to fetch item 'RobloxPromptGui'")
     end
@@ -371,13 +390,13 @@ function OvisUI:Notify(NotificationSettings)
         TemplateContent.Text = NotificationSettings.Content or "No content has written"
 
         local blurlight = nil
-        blurlight = Instance.new("DepthOfFieldEffect",game:GetService("Lighting"))
+        blurlight = Instance.new("DepthOfFieldEffect",getService().Lighting"))
         blurlight.Enabled = true
         blurlight.FarIntensity = 0
         blurlight.FocusDistance = 51.6
         blurlight.InFocusRadius = 50
         blurlight.NearIntensity = 1
-        game:GetService("Debris"):AddItem(script,0)
+        getService().Debris"):AddItem(script,0)
 
         Blur:BindFrame(CreateTemplate.BlurFrame, {
             Transparency = 0.98;
@@ -417,12 +436,12 @@ function BootOvis()
     DestroyCurrentOvis()
 
     local Blur = Instance.new("BlurEffect")
-    Blur.Name = "OvisBlur"
+    Blur.Name = "UIBlur"
     Blur.Parent = game.Lighting
     Blur.Size = 0
     
     if Ovis.Enabled == false then
-        warn("Ovis enable failed")
+        warn("Failed to enable ovis")
         wait(0.4)
         Ovis:Destroy()
         return
@@ -597,12 +616,12 @@ function OpenHome()
                 ["Content-Type"] = "application/json",
                 ["Origin"] = "https://discord.com"
             },
-            Body = game:GetService("HttpService"):JSONEncode({
+            Body = getService().HttpService"):JSONEncode({
                 cmd = "INVITE_BROWSER",
                 args = {
                     code = InviteCode
                 },
-                nonce = game:GetService("HttpService"):GenerateGUID(false)
+                nonce = getService().HttpService"):GenerateGUID(false)
             }),
         })
         OvisUI:Notify({Title = "Joining Discord...", Content = "Open up your Discord and click the join button, welcome to Ovis.", Duration = 6})
@@ -624,7 +643,7 @@ function OpenHome()
     Home.Game.FPS.TextTransparency = 1
     Home.Game.Latency.TextTransparency = 1
     -- Game Settings
-    Home.Game.GameTitle.Text = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+    Home.Game.GameTitle.Text = getService().MarketplaceService"):GetProductInfo(game.PlaceId).Name
     Home.Game.Thumbnail.Image = "https://assetgame.roblox.com/Game/Tools/ThumbnailAsset.ashx?aid=".. game.PlaceId .."&fmt=png&wd=420&ht=420"
     -- User
     Home.User.Position = UDim2.new(1, 0, 0, 256)
@@ -644,10 +663,10 @@ function OpenHome()
     Home.Execute.Description.TextTransparency = 1
     -- Execute Settings
     Home.Execute.Executor.Text = identifyexecutor()
-    if Home.Execute.Executor.Text == "Synapse X" or Home.Execute.Executor.Text == "ScriptWare" or Home.Execute.Executor.Text == "Krnl" then
-        Home.Execute.Description.Text = identifyexecutor().." is verified as our supported executor"
+    if identifyexecutor() == "Synapse X" or identifyexecutor() == "ScriptWare" or identifyexecutor() == "Krnl" then
+        Home.Execute.Description.Text = identifyexecutor().." is in our verified supported executors."
     else
-        Home.Execute.Description.Text = "Ovis does not verified "..identifyexecutor().." as our supported executor."
+        Home.Execute.Description.Text = identifyexecutor().." is not in our verified supported executors."
     end
 
     TweenService:Create(Home, TweenInfo.new(1.4, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.5}):Play()
@@ -844,7 +863,16 @@ function HideSidebar()
 
     Debounce = false
 end
-
+function getOwner()
+    local marketplaceService = getService().MarketplaceService")
+    local product = marketplaceService:GetProductInfo(game.PlaceId, Enum.InfoType.Asset)
+    return {
+        ["Name"] = product.Name;
+        ["ID"] = product.CreatorTargetId;
+        ["Type"] = product.CreatorType;
+        ["IsVerified"] = product.HasVerifiedBadge;
+    }
+end    
 function UnhideSidebar()
     Debounce = true
     TweenService:Create(Sidebar, TweenInfo.new(1.2, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
@@ -919,12 +947,18 @@ game.Players.PlayerAdded:Connect(function(Player)
     if Player:IsFriendsWith(Players.LocalPlayer.UserId) then
         OvisUI:Notify({Title = "Friend Joined", Content = "Your friend, " .. Player.Name .. " has joined your experience", Duration = 3})
     end
+    if Player.UserId == 1 then
+        OvisUI:Notify({Title = "ROBLOX Joined", Content = "ROBLOX has joined your experience! Get the camera!!!!!!", Duration = 5})
+    end
+    if Player.UserId == getOwner().ID then
+        OvisUI:Notify({Title = "Game onwer Joined", Content = "The game owner has joined your experience! Get the camera!!!!!!", Duration = 5}) 
+    end
 end)
 
 while true do
-    wait(1)
     Home.Game.FPS.Text = "You are running at "..frames.." fps"
     frames = 0
-    Home.Game.Latency.Text = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue().." Latency"
-    Home.Game.Player.Text = tostring(#game.Players:GetChildren()).."/"..tostring(game.Players.MaxPlayers).." Players"
+    Home.Game.Latency.Text = "Latency: "..getService().Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+    Home.Game.Player.Text = "Player count: "..tostring(#game.Players:GetChildren()).."/"..tostring(game.Players.MaxPlayers)
+    wait(.5) -- wait for .5 seconds before looping (this is to avoid spamming the game)
 end
