@@ -1,4 +1,8 @@
 # Ovis
-Open-source universal script with sleek Interface design & animation
 
-Discontinued due to the hyperion ( byfron ) released.
+An open-source universal dashboard script with sleek interface design and smooth animation
+
+Executing Ovis Dashboard
+```lua
+loadstring(game:HttpGet('ovis.space/dashboard'))()
+```
