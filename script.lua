@@ -10,6 +10,7 @@
     Sius is currently working on a better one, please check out our Discord
 
 --]]
+
 local currentversion = "Alpha 1.0"
 local OVIS_LOADED = false
 
