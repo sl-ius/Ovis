@@ -4,11 +4,6 @@
     Sius - Programming + Designing
 
     Trust me, I don't code this bad anymore ;-;
-
-    discord: discord.gg/d3fKHPTafg
-
-    Sius is currently working on a better one, please check out our Discord
-
 --]]
 
 local currentversion = "Alpha 1.0"
